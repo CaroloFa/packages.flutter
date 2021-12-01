@@ -24,6 +24,9 @@ class PdfController {
   PageController? _pageController;
   PdfDocument? _document;
 
+  StreamController<double> pageStream = StreamController.broadcast();
+  Stream<double> get onPageUpdate => pageStream.stream;
+
   /// Actual showed page
   int get page => (_pdfViewState!._currentIndex) + 1;
 
@@ -119,12 +122,19 @@ class PdfController {
     }
   }
 
+  void pageControllerListener() {
+    pageStream.add(_pageController!.page!);
+  }
+
   void _reInitPageController(int initialPage) {
     _pageController?.dispose();
+
     _pageController = PageController(
       initialPage: initialPage - 1,
       viewportFraction: viewportFraction,
     );
+
+    _pageController!.addListener(pageControllerListener);
   }
 
   void _attach(_PdfViewState pdfViewState) {
